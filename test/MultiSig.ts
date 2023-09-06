@@ -47,6 +47,36 @@ describe("Unit test for Multi Signature contracts", () => {
     });
   });
 
-  describe("Soumission d'une transaction", async () => {});
+  describe("Soumission d'une transaction", async () => {
+    it("Doit émettre une erreur si le signataire n'est pas propriétaire", async function () {
+      await expect(
+        multiSig.connect(user2).soumettreTx(user3.address, 2)
+      ).to.be.revertedWith("Droit refuse.");
+    });
+
+    it("Doit ajouter une nouvelle transaction avec les propriétés adéquates", async function () {
+      await multiSig.connect(user1).soumettreTx(user3.address, 2);
+
+      expect(await multiSig.getTransactionInformation(0)).to.deep.equal([
+        user3.address,
+        2,
+        false,
+        0,
+      ]);
+    });
+
+    it("Le nombre de transactions total doit être incrémenté", async function () {
+      await multiSig.connect(user1).soumettreTx(user3.address, 2);
+      await multiSig.connect(user1).soumettreTx(user3.address, 2);
+
+      expect(await multiSig.getNbrTransactions()).to.equal(2);
+    });
+
+    it("Doit émettre un évènement lors de la soumission d'une transaction", async function () {
+      await expect(await multiSig.soumettreTx(user3.address, 2))
+        .to.emit(multiSig, "SubmitTransaction")
+        .withArgs(admin.address, 0, user3.address, 2);
+    });
+  });
   describe("Confirmation d'une transaction", async () => {});
 });
