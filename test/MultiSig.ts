@@ -29,8 +29,24 @@ describe("Unit test for Multi Signature contracts", () => {
         user1.address,
       ]);
     });
+
+    it("Doit retourner le nombre correct de confirmations nécessaires", async function () {
+      expect(await multiSig.nbrConfirmationRequired()).to.equal(2);
+    });
   });
-  describe("Dépôt", async () => {});
+  describe("Dépôt", async () => {
+    it("Doit augmenter la quantité de tokens ETH sur le contrat", async function () {
+      await multiSig.depot({ value: 100 });
+      expect(await ethers.provider.getBalance(multiSig.address)).to.equal(100);
+    });
+
+    it("Doit émettre un évènement dépôt", async function () {
+      await expect(await multiSig.depot({ value: 100 }))
+        .to.emit(multiSig, "Depot")
+        .withArgs(admin.address, 100);
+    });
+  });
+
   describe("Soumission d'une transaction", async () => {});
   describe("Confirmation d'une transaction", async () => {});
 });
